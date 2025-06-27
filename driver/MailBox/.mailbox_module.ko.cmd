@@ -1,0 +1,1 @@
+cmd_/home/quan/Desktop/driver/MailBox/mailbox_module.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -z noexecstack   --build-id  -T ./scripts/module-common.lds -o /home/quan/Desktop/driver/MailBox/mailbox_module.ko /home/quan/Desktop/driver/MailBox/mailbox_module.o /home/quan/Desktop/driver/MailBox/mailbox_module.mod.o;  true
