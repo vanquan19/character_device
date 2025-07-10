@@ -154,3 +154,25 @@
   - đợi 3s
   - Ghi Z
     #### các bước đợi đơn giản chỉ để luồng hoạt động theo đúng đề bài vào số s đợi để dễ quan sát thêm luồng hoạt động như nào trên log
+## Phần kernal
+- tại sao lại có /dev/mailbox_device sử dụng trong phần test trong khi register trong module là mailbox device?
+  => vì khi khởi tạo mailbox device có major là 240 sau đó tạo thiết bị thủ công với lệnh **sudo mknod -m 666 /dev/mailbox_device c 240 0** lệnh này chatgpt là ra
+- các bước chạy kernel và test đã ghi ở trên
+## trong file mailbox_module.c
+- khi ismod thì file hàm **static int __init mailbox_module_init** sẽ chạy  trong đó có đăng ký thiết bị **int result = register_chrdev(240, "mailbox device", &mailbox_file_operations);** 240 là major, tên thiết bị và thuộc tính của nó được khai báo bên trên
+  /* To hole the file operations performed on this device*/
+struct file_operations mailbox_file_operations = {
+	.owner   = THIS_MODULE,
+	.open    = mailbox_open,
+	.read    = mailbox_read,
+	.write   = mailbox_write,
+	.release = mailbox_close,
+};
+- các thuộc tính này gắn với cáo hàm đã viết
+- tại sao khi gọi đọc hoặc ghi trong test_rw.c lại truyền như thế? => vì mấy hàm được viết bên mail_module.c yêu cầu đối số đó
+
+  ## Chi tiết các chức năng trong mấy hàm thuộc tính là gì:
+  ###  mailbox_read
+  ### mailbox_write
+  ### mailbox_open
+  ### mailbox_close
