@@ -172,7 +172,8 @@ struct file_operations mailbox_file_operations = {
 - tại sao khi gọi đọc hoặc ghi trong test_rw.c lại truyền như thế? => vì mấy hàm được viết bên mail_module.c yêu cầu đối số đó
 
   ## Chi tiết các chức năng trong mấy hàm thuộc tính là gì:
-  ###  mailbox_read
-  ### mailbox_write
-  ### mailbox_open
-  ### mailbox_close
+  ### 1. mailbox_read
+  ### 2. mailbox_write
+  ### 3. mailbox_open
+  ### 4. mailbox_close
+  ### 5. Giải thích các cờ, biến trong file
