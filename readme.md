@@ -89,3 +89,68 @@
 
 # Nếu lỗi ở test thì thử build lại
     gcc test_rw.c -o test
+
+# Luồng hoạt động
+## Ta đi từ thư mục MailBoxTest
+### test_rw.c
+- file này nhận tham số argc là số lượng tham số, argv là mảng chuỗi chứa từng đồi số của dòng lệnh
+- argc < 3 là kiểm tra lệnh gọi trong bash đã lớn hơn 3 đối số chưa(bao gồm cả tên file) nếu chưa thì không thể thực hiện tiếp vì ta cần ít nhất là 3 đối số tên file, mode(read, write), và data(nếu ghi), số byte cần đọc(nếu đọc)
+- vì argv là mảng các đối số mà bash gọi là
+  ./test write ABC
+  ./test read 5
+  -> mode sẽ là argv[1] nên dòng char *mode = argv[1] sẽ là kiểu đọc hay ghi
+- nếu mode = read => vào if, write vào else if
+- strcmp() là hàm so sánh chuỗi
+- trong hàm if tức là hàm đọc
+    if (strcmp(mode, "read") == 0) {
+        int n = atoi(argv[2]); => chuyển chuỗi thành số vì mặc định argv mà mảng chuỗi
+        char buf[1024] = {0}; => vùng nhớ tạm để lưu dữ liệu đọc được
+
+        fd = open("/dev/mailbox_device", O_RDONLY); //mở thiết bị chỉ có quyền đọc trả về số nguyên -1 nếu lỗi, >=0 nếu thành công hệ thống sẽ tìm chỉ số nhỏ nhất còn trống trong bảng file descriptor của tiến trình hiện tại để đại diện cho thiết bị được mở
+        if (fd < 0) {
+            perror("Mở /dev/mailbox_device (read) thất bại");
+            return 1;
+        }
+
+        int r = read(fd, buf, n); đọc thiết bị với số đại diện thiết bị đó fd, ghi bào vùng nhớ buff với số byte cần
+        if (r < 0) {
+            perror("Đọc thất bại");
+            close(fd);
+            return 1;
+        }
+
+        printf("Đã đọc: %.*s\n", r, buf); in ra r ký tự từ buff
+        close(fd);
+    }
+- trong hàm else if tức là hàm ghi
+     else if (strcmp(mode, "write") == 0) {
+        char *data = argv[2];
+
+        fd = open("/dev/mailbox_device", O_WRONLY); => mở thiết bị chỉ để ghi
+        if (fd < 0) {
+            perror("Mở /dev/mailbox_device (write) thất bại");
+            return 1;
+        }
+
+        int w = write(fd, data, strlen(data)); //ghi vào thiết bị định danh ghi fd, data cần ghi và độ dài của data
+        if (w < 0) {
+            perror("Ghi thất bại");
+            close(fd);
+            return 1;
+        }
+
+        printf("Đã ghi: %s\n", data); //in data đã ghi 
+        close(fd);
+    }
+  ### test là file được biên dịch từ test_rw.c với lệnh gcc ở trên
+  ### test.sh là file bash gọi từng dòng lệnh để thực thi
+  - Ghi ABC
+  - đợi 0.5s
+  - Ghi XY
+  - đợi 0.5s
+  - đọc 2 byte
+  - đợi 1s
+  - đọc 4 byte
+  - đợi 3s
+  - Ghi Z
+    #### các bước đợi đơn giản chỉ để luồng hoạt động theo đúng đề bài vào số s đợi để dễ quan sát thêm luồng hoạt động như nào trên log
